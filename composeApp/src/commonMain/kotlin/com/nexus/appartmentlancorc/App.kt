@@ -2,7 +2,7 @@ package com.nexus.appartmentlancorc
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
+import com.nexus.ui.MainScreen
 
 @Composable
 fun App() {
