@@ -14,101 +14,65 @@ import com.nexus.appartmentlancorc.service.AuthService
 @Composable
 fun BodySection(
     isLoggedIn: Boolean,
+    isAuthMode: Boolean, // Added parameter
     currentScreen: Screen,
     onLoginSuccess: () -> Unit
 ) {
-    // 1. Initialize Coroutine Scope for the API calls
     val scope = rememberCoroutineScope()
-
-    // 2. Initialize the Service (Make sure AuthService class exists in your auth package)
     val authService = remember { AuthService() }
 
-    // 3. UI State
     var email by remember { mutableStateOf("") }
     var otp by remember { mutableStateOf("") }
     var isOtpSent by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        if (!isLoggedIn) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                if (errorMessage.isNotEmpty()) {
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                if (!isOtpSent) {
-                    // EMAIL INPUT SECTION
-                    TextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
-                        singleLine = true
-                    )
-                    Button(onClick = {
-                        errorMessage = "" // Clear previous errors
-                        scope.launch {
-                            try {
-                                val response = authService.requestOtp(email)
-                                if (response.success) {
-                                    isOtpSent = true
-                                } else {
-                                    errorMessage = response.message
-                                }
-                            } catch (e: Exception) {
-                                errorMessage = "Check Backend Connection"
-                            }
-                        }
-                    }) {
-                        Text("Send OTP")
-                    }
-                } else {
-                    // OTP INPUT SECTION
-                    TextField(
-                        value = otp,
-                        onValueChange = { otp = it },
-                        label = { Text("Enter OTP") },
-                        singleLine = true
-                    )
-                    Button(onClick = {
-                        errorMessage = ""
-                        scope.launch {
-                            try {
-                                val response = authService.verifyOtp(email, otp)
-                                if (response.success) {
-                                    onLoginSuccess()
-                                } else {
-                                    errorMessage = response.message
-                                }
-                            } catch (e: Exception) {
-                                errorMessage = "Verification Error"
-                            }
-                        }
-                    }) {
-                        Text("Verify & Login")
-                    }
-                    TextButton(onClick = { isOtpSent = false }) {
-                        Text("Edit Email")
-                    }
-                }
-            }
-        } else {
-            // LOGGED IN CONTENT
+    Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+        // Condition 1: User is logged in - show app content
+        if (isLoggedIn) {
             when (currentScreen) {
                 Screen.HOME -> Text("Welcome to Lancor Courtyard")
                 Screen.USERS -> Text("Users screen (coming soon)")
                 Screen.UNITS -> Text("Units screen (coming soon)")
                 Screen.OWNERS -> Text("Owners screen (coming soon)")
             }
+        }
+        // Condition 2: User clicked Login button - show Login Flow
+        else if (isAuthMode) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (errorMessage.isNotEmpty()) {
+                    Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                }
+
+                if (!isOtpSent) {
+                    TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+                    Button(onClick = {
+                        scope.launch {
+                            try {
+                                val response = authService.requestOtp(email)
+                                if (response.success) isOtpSent = true else errorMessage = response.message
+                            } catch (e: Exception) {
+                                errorMessage = "Network Error"
+                            }
+                        }
+                    }) { Text("Send OTP") }
+                } else {
+                    TextField(value = otp, onValueChange = { otp = it }, label = { Text("Enter OTP") })
+                    Button(onClick = {
+                        scope.launch {
+                            try {
+                                val response = authService.verifyOtp(email, otp)
+                                if (response.success) onLoginSuccess() else errorMessage = response.message
+                            } catch (e: Exception) {
+                                errorMessage = "Verification Failed"
+                            }
+                        }
+                    }) { Text("Verify & Login") }
+                }
+            }
+        }
+        // Condition 3: Initial Load - show blank home page
+        else {
+            Text("Please click Login to access Lancor Courtyard")
         }
     }
 }

@@ -9,27 +9,39 @@ import com.nexus.appartmentlancorc.navigation.Screen
 fun MainScreen() {
     var isLoggedIn by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf(Screen.HOME) }
+    // New state to track if we should show the email/otp fields
+    var isAuthMode by remember { mutableStateOf(false) }
 
     Column {
         TopSection(
             isLoggedIn = isLoggedIn,
-            onLoginClick = { /* Scroll to login or show dialog */ },
+            onLoginClick = {
+                isAuthMode = true // Show login fields when clicked
+                currentScreen = Screen.HOME
+            },
             onLogoutClick = {
                 isLoggedIn = false
+                isAuthMode = false
                 currentScreen = Screen.HOME
             }
         )
 
         MenuBar(
             enabled = isLoggedIn,
-            onMenuSelected = { currentScreen = it }
+            onMenuSelected = {
+                currentScreen = it
+                isAuthMode = false // Hide login fields if a menu is selected
+            }
         )
 
-        // Pass the success callback here
         BodySection(
             isLoggedIn = isLoggedIn,
+            isAuthMode = isAuthMode, // Pass the new state
             currentScreen = currentScreen,
-            onLoginSuccess = { isLoggedIn = true }
+            onLoginSuccess = {
+                isLoggedIn = true
+                isAuthMode = false // Hide fields after success
+            }
         )
     }
 }
