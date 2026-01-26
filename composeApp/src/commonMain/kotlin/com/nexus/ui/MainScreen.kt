@@ -4,43 +4,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import com.nexus.apartment.ui.TopSection
 import com.nexus.appartmentlancorc.navigation.Screen
+import com.nexus.appartmentlancorc.SessionManager
 
 @Composable
 fun MainScreen() {
-    var isLoggedIn by remember { mutableStateOf(false) }
+    val sessionManager = remember { SessionManager() }
+
+    // Check session on start
+    var isLoggedIn by remember { mutableStateOf(sessionManager.isUserAuthenticated()) }
     var currentScreen by remember { mutableStateOf(Screen.HOME) }
-    // New state to track if we should show the email/otp fields
     var isAuthMode by remember { mutableStateOf(false) }
 
     Column {
         TopSection(
             isLoggedIn = isLoggedIn,
-            onLoginClick = {
-                isAuthMode = true // Show login fields when clicked
-                currentScreen = Screen.HOME
-            },
+            onLoginClick = { isAuthMode = true },
             onLogoutClick = {
+                sessionManager.logout() // Clear 10-day session
                 isLoggedIn = false
-                isAuthMode = false
-                currentScreen = Screen.HOME
-            }
-        )
-
-        MenuBar(
-            enabled = isLoggedIn,
-            onMenuSelected = {
-                currentScreen = it
-                isAuthMode = false // Hide login fields if a menu is selected
             }
         )
 
         BodySection(
             isLoggedIn = isLoggedIn,
-            isAuthMode = isAuthMode, // Pass the new state
+            isAuthMode = isAuthMode,
             currentScreen = currentScreen,
             onLoginSuccess = {
+                sessionManager.login() // Save the 10-day session
                 isLoggedIn = true
-                isAuthMode = false // Hide fields after success
+                isAuthMode = false
             }
         )
     }
