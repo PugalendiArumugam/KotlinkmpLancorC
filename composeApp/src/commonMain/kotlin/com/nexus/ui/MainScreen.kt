@@ -10,30 +10,54 @@ import com.nexus.appartmentlancorc.SessionManager
 fun MainScreen() {
     val sessionManager = remember { SessionManager() }
 
-    // Check session on start
-    var isLoggedIn by remember { mutableStateOf(sessionManager.isUserAuthenticated()) }
+    var email by remember { mutableStateOf("") }
+
+    var authStep by remember {
+        mutableStateOf(
+            if (sessionManager.isUserAuthenticated())
+                AuthStep.LOGGED_IN
+            else
+                AuthStep.EMAIL
+        )
+    }
+
     var currentScreen by remember { mutableStateOf(Screen.HOME) }
-    var isAuthMode by remember { mutableStateOf(false) }
 
     Column {
+
         TopSection(
-            isLoggedIn = isLoggedIn,
-            onLoginClick = { isAuthMode = true },
+            isLoggedIn = authStep == AuthStep.LOGGED_IN,
             onLogoutClick = {
-                sessionManager.logout() // Clear 10-day session
-                isLoggedIn = false
+                sessionManager.logout()
+                authStep = AuthStep.EMAIL
+                email = ""              // ✅ clear email on logout
             }
         )
 
         BodySection(
-            isLoggedIn = isLoggedIn,
-            isAuthMode = isAuthMode,
+            authStep = authStep,
             currentScreen = currentScreen,
+            email = email,           // ✅ pass email DOWN
+            onOtpSent = { enteredEmail ->
+                email = enteredEmail // ✅ store email
+                authStep = AuthStep.OTP
+            },
             onLoginSuccess = {
-                sessionManager.login() // Save the 10-day session
-                isLoggedIn = true
-                isAuthMode = false
+                sessionManager.login()
+                authStep = AuthStep.LOGGED_IN
+                currentScreen = Screen.HOME
+            },
+            onOtpFailed = {
+                authStep = AuthStep.EMAIL
+                email = ""
             }
         )
+
+        if (authStep == AuthStep.LOGGED_IN) {
+            MenuBar(
+                enabled = true,
+                onMenuSelected = { currentScreen = it }
+            )
+        }
     }
 }

@@ -26,11 +26,15 @@ fun MenuBar(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
 
+        MenuItem("Home", Icons.Default.Home, enabled) {
+            onMenuSelected(Screen.HOME)
+        }
+
         MenuItem("Users", Icons.Default.Person, enabled) {
             onMenuSelected(Screen.USERS)
         }
 
-        MenuItem("Units", Icons.Default.Home, enabled) {
+        MenuItem("Units", Icons.Default.Apartment, enabled) {
             onMenuSelected(Screen.UNITS)
         }
 

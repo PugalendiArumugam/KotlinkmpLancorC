@@ -20,7 +20,6 @@ import appartmentlancorc.composeapp.generated.resources.lancor_courtyard_logo
 @Composable
 fun TopSection(
     isLoggedIn: Boolean,
-    onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Row(
@@ -37,12 +36,11 @@ fun TopSection(
             contentScale = ContentScale.Fit
         )
 
-        Button(
-            onClick = {
-                if (isLoggedIn) onLogoutClick() else onLoginClick()
+        // ✅ Show Logout ONLY after login
+        if (isLoggedIn) {
+            Button(onClick = onLogoutClick) {
+                Text("Logout")
             }
-        ) {
-            Text(if (isLoggedIn) "Logout" else "Login")
         }
     }
 }

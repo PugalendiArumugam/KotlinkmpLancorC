@@ -13,69 +13,43 @@ import com.nexus.appartmentlancorc.service.AuthService
 
 @Composable
 fun BodySection(
-    isLoggedIn: Boolean,
-    isAuthMode: Boolean, // Added parameter
+    authStep: AuthStep,
     currentScreen: Screen,
-    onLoginSuccess: () -> Unit
+    email: String,
+    onOtpSent: (String) -> Unit,
+    onLoginSuccess: () -> Unit,
+    onOtpFailed: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val authService = remember { AuthService() }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        when (authStep) {
 
-    var email by remember { mutableStateOf("") }
-    var otp by remember { mutableStateOf("") }
-    var isOtpSent by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
-
-    Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
-        // Condition 1: User is logged in - show app content
-        if (isLoggedIn) {
-            when (currentScreen) {
-                Screen.HOME -> Text("Welcome to Lancor Courtyard")
-                Screen.USERS -> Text("Users screen (coming soon)")
-                Screen.UNITS -> Text("Units screen (coming soon)")
-                Screen.OWNERS -> Text("Owners screen (coming soon)")
+            AuthStep.EMAIL -> {
+                EmailLoginScreen(
+                    onOtpSent = onOtpSent
+                )
             }
-        }
-        // Condition 2: User clicked Login button - show Login Flow
-        else if (isAuthMode) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (errorMessage.isNotEmpty()) {
-                    Text(errorMessage, color = MaterialTheme.colorScheme.error)
-                }
 
-                if (!isOtpSent) {
-                    TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
-                    Button(onClick = {
-                        scope.launch {
-                            try {
-                                val response = authService.requestOtp(email)
-                                if (response.success) isOtpSent = true else errorMessage = response.message
-                            } catch (e: Exception) {
-                                errorMessage = "Network Error"
-                            }
-                        }
-                    }) { Text("Send OTP") }
-                } else {
-                    TextField(value = otp, onValueChange = { otp = it }, label = { Text("Enter OTP") })
-                    Button(onClick = {
-                        scope.launch {
-                            try {
-                                val response = authService.verifyOtp(email, otp)
-                                if (response.success) onLoginSuccess() else errorMessage = response.message
-                            } catch (e: Exception) {
-                                errorMessage = "Verification Failed"
-                            }
-                        }
-                    }) { Text("Verify & Login") }
+            AuthStep.OTP -> {
+                OtpScreen(
+                    email = email,
+                    onLoginSuccess = onLoginSuccess,
+                    onLogout = onOtpFailed
+                )
+            }
+
+            AuthStep.LOGGED_IN -> {
+                when (currentScreen) {
+                    Screen.HOME -> Text("Welcome to Lancor Courtyard")
+                    Screen.USERS -> Text("Users screen (coming soon)")
+                    Screen.UNITS -> Text("Units screen (coming soon)")
+                    Screen.OWNERS -> Text("Owners screen (coming soon)")
                 }
             }
-        }
-        // Condition 3: Initial Load - show blank home page
-        else {
-            Text("Please click Login to access Lancor Courtyard")
         }
     }
 }
-
-
-
