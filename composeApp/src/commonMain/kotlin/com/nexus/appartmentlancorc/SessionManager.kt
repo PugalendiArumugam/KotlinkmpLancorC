@@ -1,36 +1,23 @@
 package com.nexus.appartmentlancorc
 
-import com.russhwolf.settings.Settings
-import kotlinx.datetime.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.TimeSource
 
-class SessionManager(
-    private val settings: Settings = Settings()
-) {
-
-    fun isUserAuthenticated(): Boolean {
-        val isLoggedIn = settings.getBoolean("is_logged_in", false)
-        if (!isLoggedIn) return false
-
-        val loginTime = settings.getLong("login_timestamp", 0L)
-        val now = Clock.System.now().toEpochMilliseconds()
-
-        val tenDaysInMillis = 10L * 24 * 60 * 60 * 1000
-
-        return if (now - loginTime < tenDaysInMillis) {
-            true
-        } else {
-            logout()
-            false
-        }
-    }
+class SessionManager {
+    private var loginMark: TimeSource.Monotonic.ValueTimeMark? = null
+    private val sessionDuration = 10.days
 
     fun login() {
-        settings.putBoolean("is_logged_in", true)
-        settings.putLong("login_timestamp", Clock.System.now().toEpochMilliseconds())
+        loginMark = TimeSource.Monotonic.markNow()
     }
 
     fun logout() {
-        settings.putBoolean("is_logged_in", false)
-        settings.putLong("login_timestamp", 0L)
+        loginMark = null
+    }
+
+    fun isUserAuthenticated(): Boolean {
+        val mark = loginMark ?: return false
+        return mark.elapsedNow() < sessionDuration
     }
 }
