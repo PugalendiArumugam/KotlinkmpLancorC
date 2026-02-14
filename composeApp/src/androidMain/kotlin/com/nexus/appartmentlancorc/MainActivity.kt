@@ -3,17 +3,23 @@ package com.nexus.appartmentlancorc
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
+import com.nexus.ui.theme.LancorCourtyardTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        // Enable edge-to-edge (optional)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
-            App()
+            // Wrap your app with your custom theme
+            LancorCourtyardTheme {
+                App()
+            }
         }
     }
 }
@@ -21,5 +27,8 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    // Also wrap preview with theme
+    LancorCourtyardTheme {
+        App()
+    }
 }

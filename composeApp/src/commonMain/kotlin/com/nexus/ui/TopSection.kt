@@ -1,45 +1,48 @@
-package com.nexus.apartment.ui
+package com.nexus.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight  // ADD THIS
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
-import appartmentlancorc.composeapp.generated.resources.Res
-import appartmentlancorc.composeapp.generated.resources.lancor_courtyard_logo
 
 @Composable
-fun TopSection(
-    isLoggedIn: Boolean,
-    onLogoutClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+fun TopSection(isLoggedIn: Boolean, onLogoutClick: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.primary,
+        tonalElevation = 4.dp
     ) {
-        Image(
-            painter = painterResource(Res.drawable.lancor_courtyard_logo),
-            contentDescription = "Lancor Courtyard Logo",
-            modifier = Modifier.height(44.dp),
-            contentScale = ContentScale.Fit
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .statusBarsPadding(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "LANCOR COURTYARD",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,  // Needs import
+                color = MaterialTheme.colorScheme.onPrimary
+            )
 
-        // ✅ Show Logout ONLY after login
-        if (isLoggedIn) {
-            Button(onClick = onLogoutClick) {
-                Text("Logout")
+            if (isLoggedIn) {
+                IconButton(
+                    onClick = onLogoutClick,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Logout,
+                        contentDescription = "Logout",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         }
     }

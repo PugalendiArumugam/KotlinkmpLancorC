@@ -12,15 +12,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 // Compose Material 3
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults  // ADD THIS
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 
 // Compose UI
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight  // ADD THIS
 import androidx.compose.ui.unit.dp
 
 // Coroutines
@@ -37,46 +46,106 @@ fun EmailLoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val authService = remember { AuthService() }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Spacer(Modifier.height(32.dp))
 
-        Text("Login", style = MaterialTheme.typography.headlineMedium)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Text(
+                    text = "Welcome Back",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold  // Now FontWeight is imported
+                )
 
-        Spacer(Modifier.height(16.dp))
+                Text(
+                    text = "Enter your email to continue",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            placeholder = { Text("Enter email id") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(0.8f)
-        )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        error = "" // Clear error when user types
+                    },
+                    placeholder = { Text("Enter email address") },
+                    label = { Text("Email Address") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = !isLoading,
+                    isError = error.isNotEmpty(),
+                    colors = OutlinedTextFieldDefaults.colors(  // Now OutlinedTextFieldDefaults is imported
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary
+                    )
+                )
 
-        Spacer(Modifier.height(20.dp))
-
-        PrimaryPinkButton(
-            text = "Continue",
-            onClick = {
-                scope.launch {
-                    try {
-                        val res = authService.requestOtp(email)
-                        if (res.success) {
-                            onOtpSent(email)
-                        } else {
-                            error = res.message
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.height(24.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    PrimaryPinkButton(
+                        text = "Send OTP",
+                        onClick = {
+                            scope.launch {
+                                try {
+                                    isLoading = true
+                                    val res = authService.requestOtp(email)
+                                    if (res.success) {
+                                        onOtpSent(email)
+                                    } else {
+                                        error = res.message
+                                    }
+                                } catch (e: Exception) {
+                                    error = "Network error. Please try again."
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
                         }
-                    } catch (e: Exception) {
-                        error = "Network error"
-                    }
+                    )
+                }
+
+                if (error.isNotEmpty()) {
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
                 }
             }
-        )
-
-        if (error.isNotEmpty()) {
-            Spacer(Modifier.height(12.dp))
-            Text(error, color = MaterialTheme.colorScheme.error)
         }
+
+        Spacer(Modifier.height(32.dp))
     }
 }

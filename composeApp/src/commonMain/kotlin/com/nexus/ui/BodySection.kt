@@ -18,10 +18,11 @@ fun BodySection(
     email: String,
     onOtpSent: (String) -> Unit,
     onLoginSuccess: () -> Unit,
-    onOtpFailed: () -> Unit
+    onOtpFailed: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         contentAlignment = Alignment.Center
@@ -44,12 +45,84 @@ fun BodySection(
 
             AuthStep.LOGGED_IN -> {
                 when (currentScreen) {
-                    Screen.HOME -> Text("Welcome to Lancor Courtyard")
-                    Screen.USERS -> Text("Users screen (coming soon)")
-                    Screen.UNITS -> Text("Units screen (coming soon)")
-                    Screen.OWNERS -> Text("Owners screen (coming soon)")
+                    Screen.HOME -> WelcomeScreen()
+                    Screen.USERS -> ComingSoonScreen("Users Management")
+                    Screen.UNITS -> ComingSoonScreen("Units Management")
+                    Screen.OWNERS -> ComingSoonScreen("Owners Management")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun WelcomeScreen() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Welcome to Lancor Courtyard",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Your premium apartment management system",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ComingSoonScreen(featureName: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = featureName,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Coming Soon",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "This feature is under development and will be available soon.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

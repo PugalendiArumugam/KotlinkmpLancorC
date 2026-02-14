@@ -6,8 +6,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-
-    kotlin("plugin.serialization") // 👈 no version here
+    kotlin("plugin.serialization")
 }
 
 kotlin {
@@ -18,8 +17,9 @@ kotlin {
     }
 
     listOf(
-        iosArm64(),
-        iosSimulatorArm64()
+        iosX64(),          // <--- ADD THIS for your Intel Mac Simulator
+        iosArm64(),        // For your physical iPhone
+        iosSimulatorArm64() // For Apple Silicon (M1/M2) simulators
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -30,30 +30,37 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                // Compose dependencies - REMOVE the explicit version
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.material3)
+                implementation(compose.material3)  // This uses default version from compose plugin
                 implementation(compose.ui)
                 implementation(compose.materialIconsExtended)
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
 
                 implementation(libs.androidx.lifecycle.viewmodelCompose)
                 implementation(libs.androidx.lifecycle.runtimeCompose)
 
+                // Ktor
                 implementation("io.ktor:ktor-client-core:2.3.11")
                 implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
+                // Coroutines and other libs
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
                 implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.1")
+
+                // REMOVE THIS LINE: implementation("androidx.compose.material3:material3:${composeVersion}")
             }
         }
 
         androidMain {
             dependencies {
                 implementation(compose.preview)
-                implementation(compose.components.uiToolingPreview) // ✅ MOVED HERE
+                implementation(compose.components.uiToolingPreview)
                 implementation(libs.androidx.activity.compose)
                 implementation("io.ktor:ktor-client-android:2.3.11")
             }
@@ -61,7 +68,7 @@ kotlin {
 
         iosMain {
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.11") // ✅ REQUIRED
+                implementation("io.ktor:ktor-client-darwin:2.3.11")
             }
         }
 
@@ -103,4 +110,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-
